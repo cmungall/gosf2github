@@ -101,7 +101,7 @@ foreach my $ticket (@tickets) {
     }
 
     # it is tempting to prefix with '@' but this may generate spam and get the bot banned
-    $body .= "\n\nOriginal comment by: \@".map_user($ticket->{reported_by});
+    #$body .= "\n\nOriginal comment by: \@".map_user($ticket->{reported_by});
     $body .= "\n\nOriginal comment by: ".map_user($ticket->{reported_by});
 
     my $num = $ticket->{ticket_num};
