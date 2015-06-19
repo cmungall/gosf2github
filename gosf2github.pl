@@ -272,6 +272,11 @@ Create an account for an agent like https://github.com/bbopjenkins -
 use this account to generate the token. This may be better than having
 everything show up under your own personal account
 
+CREDITS:
+
+Author: [Chris Mungall](https://github.com/cmungall)
+Inspiration: https://github.com/ttencate/sf2github
+Thanks: Ivan Žužak (GitHub support)
 
 EOM
 }
