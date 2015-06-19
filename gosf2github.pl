@@ -100,6 +100,22 @@ foreach my $ticket (@tickets) {
         $body = join("\n", @lines);
     }
 
+    my $created_date = $ticket->{created_date};
+
+    # OK, so I should really use a proper library here...
+    $created_date =~ s/\-//g;
+    $created_date =~ s/\s.*//g;
+
+    my $is_markdown = 1;
+    ##  Issues and comments with the creation date before April 20
+    ##  2009 at 19:00:00 (UTC) will get parsed and rendered using
+    ##  Textile, which is what GitHub used by default before Markdown
+
+    # Good enough, tough luck if you're after 7pm on the 20th
+    if ($created_date < 20090421) {
+        $is_markdown = 0;
+    }
+
     # it is tempting to prefix with '@' but this may generate spam and get the bot banned
     #$body .= "\n\nOriginal comment by: \@".map_user($ticket->{reported_by});
     $body .= "\n\nOriginal comment by: ".map_user($ticket->{reported_by});
@@ -107,8 +123,13 @@ foreach my $ticket (@tickets) {
     my $num = $ticket->{ticket_num};
     if ($sf_tracker) {
         my $turl = "$sf_base_url$sf_tracker/$num";
-        ##$body .= "\n\nOriginal Ticket: [$sf_tracker/$num]($turl)";
-        $body .= "\n\nOriginal Ticket: $turl";
+        if ($is_markdown) {
+            $body .= "\n\nOriginal Ticket: [$sf_tracker/$num]($turl)";
+        }
+        else {
+            # Textile
+            $body .= "\n\nOriginal Ticket: \"$sf_tracker/$num\":$turl";
+        }
     }
 
     my $issue =
