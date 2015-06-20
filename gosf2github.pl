@@ -86,6 +86,7 @@ foreach my $ticket (@tickets) {
     }
 
     my $body = $ticket->{description};
+    $body = make_ascii($body);
 
     # fix SF-specific markdown
     $body =~ s/\~\~\~\~/```/g;
@@ -134,7 +135,7 @@ foreach my $ticket (@tickets) {
 
     my $issue =
     {
-        "title" => $ticket->{summary},
+        "title" => make_ascii($ticket->{summary}),
         "body" => $body,
         "created_at" => cvt_time($ticket->{created_date}),    ## check
         "assignee" => $assignee,
@@ -215,6 +216,23 @@ sub map_priority {
     if ($pr > 5) {
         return ("high priority");
     }
+}
+
+sub make_ascii {
+    my $s = shift;
+    $_ = $s;
+
+    tr [\200-\377]
+        [\000-\177];   # see 'man perlop', section on tr/
+    # weird ascii characters should be excluded
+    tr/\0-\10//d;   # remove weird characters; ascii 0-8
+    # preserve \11 (9 - tab) and \12 (10-linefeed)
+    tr/\13\14//d;   # remove weird characters; 11,12
+    # preserve \15 (13 - carriage return)
+    tr/\16-\37//d;  # remove 14-31 (all rest before space)
+    tr/\177//d;     # remove DEL character
+
+    return $_;
 }
 
 sub scriptname {
