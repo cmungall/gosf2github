@@ -245,19 +245,19 @@ sub usage {
     my $sn = scriptname();
 
     <<EOM;
-$sn [-h] [-u USERMAP] [-c COLLABINFO] [-r REPO] [-t OATH_TOKEN] [-a USERNAME] [-l LABEL]* [-s SF_TRACKER] [--dry-run] TICKETS-JSON-FILE
+$sn [-h] [-u USERMAP] [-c COLLABINFO] [-r REPO] [-t OAUTH_TOKEN] [-a USERNAME] [-l LABEL]* [-s SF_TRACKER] [--dry-run] TICKETS-JSON-FILE
 
 Migrates tickets from sourceforge to github, using new v3 GH API, documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
 
 Requirements:
 
  * This assumes that you have exported your tickets from SF. E.g. from a page like this: https://sourceforge.net/p/obo/admin/export
- * You have a github account and have created an OAth token here: https://github.com/settings/tokens    
+ * You have a github account and have created an OAuth token here: https://github.com/settings/tokens
  * You have "curl" in your PATH
 
 Example Usage:
 
-curl -H "Authorization: token TOKEN  https://api.github.com/repos/obophenotype/cell-ontology/collaborators > cell-collab.json
+curl -H "Authorization: token TOKEN" https://api.github.com/repos/obophenotype/cell-ontology/collaborators > cell-collab.json
 gosf2github.pl -a cmungall -u users_sf2gh.json -c cell-collab.json -r obophenotype/cell-ontology -t YOUR-TOKEN-HERE cell-ontology-sf-export.json 
 
 
@@ -271,7 +271,7 @@ ARGUMENTS:
                  Examples: cmungall/sf-test, obophenotype/cell-ontology
 
    -t | --token  TOKEN *REQUIRED*
-                 OATH token. Get one here: https://github.com/settings/tokens
+                 OAuth token. Get one here: https://github.com/settings/tokens
                  Note that all tickets and issues will appear to originate from the user that generates the token
 
    -l | --label  LABEL
@@ -288,7 +288,7 @@ ARGUMENTS:
    -c | --collaborators COLLAB-JSON-FILE *REQUIRED*
                   Required, as it is impossible to assign to a non-collaborator
                   Generate like this:
-                  curl -H "Authorization: token TOKEN  https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
+                  curl -H "Authorization: token TOKEN" https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
 
    -s | --sf-tracker  NAME
                  E.g. obo/mouse-anatomy-requests
@@ -298,7 +298,7 @@ NOTES:
 
  * uses a pre-release API documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
  * milestones are converted to labels
- * all issues and comments will appear to have originated from the user who issues the OAth ticket
+ * all issues and comments will appear to have originated from the user who issues the OAuth token
 
 TIP:
 
