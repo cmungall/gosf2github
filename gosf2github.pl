@@ -80,7 +80,7 @@ foreach my $ticket (@tickets) {
     }
 
     my $assignee = map_user($ticket->{assigned_to});
-    if (!$collabh{$assignee}) {
+    if (!$assignee || !$collabh{$assignee}) {
         #die "$assignee is not a collaborator";
         $assignee = $default_assignee;
     }
@@ -192,8 +192,8 @@ sub parse_json_file {
 
 sub map_user {
     my $u = shift;
-    my $ghu = $usermap->{$u} || $u;
-    return $ghu;
+    my $ghu = $usermap->{$u} if $u;
+    return $ghu || $u;
 }
 
 sub cvt_time {
@@ -206,7 +206,7 @@ sub cvt_time {
 # customize this?
 sub map_priority {
     my $pr = shift;
-    if ($pr eq "5") {
+    if (!$pr || $pr eq "5") {
         return ();
     }
     if ($pr < 5) {
