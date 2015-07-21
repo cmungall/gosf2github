@@ -1,6 +1,6 @@
-## Imports tickets from SF into GH
+## Imports tickets into GitHub from SourceForge
 
-This was developed for the gene ontology but it is generic and should work for any project.
+This was developed for the Gene Ontology but is generic and will work for any project. 
 
 ## Usage
 
