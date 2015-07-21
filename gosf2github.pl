@@ -8,12 +8,14 @@ my $GITHUB_TOKEN;
 my $REPO;
 my $dry_run=0;
 my @collabs = ();
+my $sleeptime = 3;
 my $default_assignee = 'cmungall';
 my $usermap = {};
 my $sf_base_url = "https://sourceforge.net/p/";
 my $sf_tracker = "";  ## e.g. obo/mouse-anatomy-requests
 my @default_labels = ();
 my $genpurls;
+my $start_from = 1;
 while ($ARGV[0] =~ /^\-/) {
     my $opt = shift @ARGV;
     if ($opt eq '-h' || $opt eq '--help') {
@@ -32,6 +34,12 @@ while ($ARGV[0] =~ /^\-/) {
     elsif ($opt eq '-s' || $opt eq '--sf-tracker') {
         $sf_tracker = shift @ARGV;
     }
+    elsif ($opt eq '-d' || $opt eq '--delay') {
+        $sleeptime = shift @ARGV;
+    }
+    elsif ($opt eq '-i' || $opt eq '--initial_ticket') {
+        $start_from = shift @ARGV;
+    }
     elsif ($opt eq '-l' || $opt eq '--label') {
         push(@default_labels, shift @ARGV);
     }
@@ -39,6 +47,8 @@ while ($ARGV[0] =~ /^\-/) {
         $dry_run = 1;
     }
     elsif ($opt eq '--generate-purls') {
+        # if you are not part of the OBO Library project, you can safely ignore this option;
+        # It will replace IDs of form FOO:nnnnn with PURLs
         $genpurls = 1;
     }
     elsif ($opt eq '-c' || $opt eq '--collaborators') {
@@ -51,6 +61,7 @@ while ($ARGV[0] =~ /^\-/) {
         die $opt;
     }
 }
+print STDERR "TICKET JSON: @ARGV\n";
 
 my %collabh = ();
 foreach (@collabs) {
@@ -68,7 +79,7 @@ my @milestones = @{$obj->{milestones}};
 #}
 
 foreach my $ticket (@tickets) {
-
+    
     my $custom = $ticket->{custom_fields} || {};
     my $milestone = $custom->{_milestone};
 
@@ -122,6 +133,11 @@ foreach my $ticket (@tickets) {
     $body .= "\n\nOriginal comment by: ".map_user($ticket->{reported_by});
 
     my $num = $ticket->{ticket_num};
+    printf "Ticket: %d of %d\n", $num, scalar(@tickets);
+    if ($num < $start_from) {
+        print STDERR "SKIPPING: $num\n";
+        next;
+    }
     if ($sf_tracker) {
         my $turl = "$sf_base_url$sf_tracker/$num";
         if ($is_markdown) {
@@ -177,7 +193,7 @@ foreach my $ticket (@tickets) {
         print `$command`;
     }
     #die;
-    sleep(3);
+    sleep($sleeptime);
 }
 
 
@@ -315,7 +331,7 @@ CREDITS:
 
 Author: [Chris Mungall](https://github.com/cmungall)
 Inspiration: https://github.com/ttencate/sf2github
-Thanks: Ivan Žužak (GitHub support)
+Thanks: Ivan Žužak (GitHub support), Ville Skyttä (https://github.com/scop)
 
 EOM
 }
