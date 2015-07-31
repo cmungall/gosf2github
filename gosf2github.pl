@@ -37,7 +37,7 @@ while ($ARGV[0] =~ /^\-/) {
     elsif ($opt eq '-d' || $opt eq '--delay') {
         $sleeptime = shift @ARGV;
     }
-    elsif ($opt eq '-i' || $opt eq '--initial_ticket') {
+    elsif ($opt eq '-i' || $opt eq '--initial-ticket') {
         $start_from = shift @ARGV;
     }
     elsif ($opt eq '-l' || $opt eq '--label') {
@@ -107,7 +107,7 @@ foreach my $ticket (@tickets) {
         foreach (@lines) {
             last if m@```@;
             next if m@^\s\s\s\s@;
-            s@(\S+):(\d+)@[$1:$2](http://purl.obolibrary.org/obo/$1_$2)@g;
+            s@(\w+):(\d+)@[$1:$2](http://purl.obolibrary.org/obo/$1_$2)@g;
         }
         $body = join("\n", @lines);
     }
@@ -130,7 +130,7 @@ foreach my $ticket (@tickets) {
 
     # it is tempting to prefix with '@' but this may generate spam and get the bot banned
     #$body .= "\n\nOriginal comment by: \@".map_user($ticket->{reported_by});
-    $body .= "\n\nOriginal comment by: ".map_user($ticket->{reported_by});
+    $body .= "\n\nReported by: ".map_user($ticket->{reported_by});
 
     my $num = $ticket->{ticket_num};
     printf "Ticket: %d of %d\n", $num, scalar(@tickets);
@@ -190,7 +190,21 @@ foreach my $ticket (@tickets) {
         print "DRY RUN: not executing\n";
     }
     else {
-        print `$command`;
+        # yes, I'm really doing this via a shell call to curl, and not
+        # LWP or similar, I prefer it this way
+        my $err = system($command);
+        if ($err) {
+            print STDERR "FAILED: $command\n";
+            print STDERR "Retrying once...\n";
+            # HARDCODE ALERT: do a single retry
+            sleep($sleeptime * 5);
+            $err = system($command);
+            if ($err) {
+                print STDERR "FAILED: $command\n";
+                print STDERR "To resume, use the -i $num option\n";
+                exit(1);
+            }
+        }
     }
     #die;
     sleep($sleeptime);
@@ -210,6 +224,9 @@ sub parse_json_file {
 sub map_user {
     my $u = shift;
     my $ghu = $usermap->{$u} || $u;
+    if ($ghu eq 'nobody') {
+        $ghu = $u;
+    }
     return $ghu;
 }
 
@@ -306,15 +323,40 @@ ARGUMENTS:
                   Generate like this:
                   curl -H "Authorization: token TOKEN  https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
 
+   -i | --initial-ticket  NUMBER
+                 Start the import from (sourceforge) ticket number NUM. This can be useful for resuming a previously stopped or failed import.
+                 For example, if you have already imported 1-100, then the next github number assigned will be 101 (this cannot be controlled).
+                 You will need to run the script again with argument: -i 101
+
    -s | --sf-tracker  NAME
                  E.g. obo/mouse-anatomy-requests
                  If specified, will append the original URL to the body of the new issue. E.g. https://sourceforge.net/p/obo/mouse-anatomy-requests/90
+
+   --generate-purls
+                 OBO Ontologies only: converts each ID of the form `FOO:nnnnnnn` into a PURL.
+                 If this means nothing to you, the option is not intended for you. You can safely ignore it.
 
 NOTES:
 
  * uses a pre-release API documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
  * milestones are converted to labels
  * all issues and comments will appear to have originated from the user who issues the OAth ticket
+ * NEVER RUN TWO PROCESSES OF THIS SCRIPT IN THE SAME DIRECTORY - see notes on json hack below
+
+HOW IT WORKS:
+
+The script iterates through every ticket in the json dump. For each
+ticket, it prepares an API post request to the new GitHub API.
+
+The contents of the request are placed in a directory `foo.json` in
+your home dir, and then this is fed via a command line call to
+`curl`. Yes, this is hacky but I prefer it this way. Feel free to
+submit a fix via pull request if this bothers you.
+
+(warning: because if this you should never run >1 instance of this
+script at the same time in the same directory)
+
+The script will then sleep for 3s before continuing on to the next ticket.
 
 TIP:
 
