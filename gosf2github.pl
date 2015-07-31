@@ -222,7 +222,7 @@ sub parse_json_file {
 
 sub map_user {
     my $u = shift;
-    my $ghu = $usermap->{$u} || $u;
+    my $ghu = $u ? $usermap->{$u} : $u;
     if ($ghu && $ghu eq 'nobody') {
         $ghu = $u;
     }
