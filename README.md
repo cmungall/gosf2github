@@ -1,6 +1,6 @@
-## Imports tickets from SF into GH
+## Imports tickets into GitHub from SourceForge
 
-This was developed for the gene ontology but it is generic and should work for any project.
+This was developed for the Gene Ontology but is generic and will work for any project. 
 
 ## Usage
 
@@ -56,11 +56,27 @@ ARGUMENTS:
                  E.g. obo/mouse-anatomy-requests
                  If specified, will append the original URL to the body of the new issue. E.g. https://sourceforge.net/p/obo/mouse-anatomy-requests/90
 
+   --generate-purls
+                 OBO Ontologies only: converts each ID of the form `FOO:nnnnnnn` into a PURL.
+                 If this means nothing to you, the option is not intended for you. You can safely ignore it.
+
 NOTES:
 
  * uses a pre-release API documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
  * milestones are converted to labels
  * all issues and comments will appear to have originated from the user who issues the OAth ticket
+
+HOW IT WORKS:
+
+The script iterates through every ticket in the json dump. For each
+ticket, it prepares an API post request to the new GitHub API.
+
+The contents of the request are placed in a directory `foo.json` in
+your home dir, and then this is fed via a command line call to
+`curl`. Yes, this is hacky but I prefer it this way. Feel free to
+submit a fix via pull request if this bothers you.
+
+The script will then sleep for 3s before continuing on to the next ticket.
 
 TIP:
 
@@ -72,6 +88,12 @@ ticket and comments.
 Create an account for an agent like https://github.com/bbopjenkins -
 use this account to generate the token. This may be better than having
 everything show up under your own personal account
+
+CREDITS:
+
+Author: [Chris Mungall](https://github.com/cmungall)
+Inspiration: https://github.com/ttencate/sf2github
+Thanks: Ivan Žužak (GitHub support), Ville Skyttä (https://github.com/scop)
 
 
 ```
