@@ -78,6 +78,10 @@ my @milestones = @{$obj->{milestones}};
 #    print "$k\n";
 #}
 
+@tickets = sort {
+    $a->{ticket_num} <=> $b->{ticket_num}
+} @tickets;
+
 foreach my $ticket (@tickets) {
     
     my $custom = $ticket->{custom_fields} || {};
@@ -132,7 +136,7 @@ foreach my $ticket (@tickets) {
     $body .= "\n\nReported by: ".map_user($ticket->{reported_by});
 
     my $num = $ticket->{ticket_num};
-    printf "Ticket: %d of %d\n", $num, scalar(@tickets);
+    printf "Ticket: ticket_num: %d of %d total\n", $num, scalar(@tickets);
     if ($num < $start_from) {
         print STDERR "SKIPPING: $num\n";
         next;
