@@ -136,7 +136,7 @@ foreach my $ticket (@tickets) {
     $body .= "\n\nReported by: ".map_user($ticket->{reported_by});
 
     my $num = $ticket->{ticket_num};
-    printf "Ticket: ticket_num: %d of %d total\n", $num, scalar(@tickets);
+    printf "Ticket: ticket_num: %d of %d total (last ticket_num=%d)\n", $num, scalar(@tickets), $tickets[-1]->{ticket_num};
     if ($num < $start_from) {
         print STDERR "SKIPPING: $num\n";
         next;
