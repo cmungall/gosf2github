@@ -9,7 +9,7 @@ my $REPO;
 my $dry_run=0;
 my @collabs = ();
 my $sleeptime = 3;
-my $default_assignee = 'cmungall';
+my $default_assignee;
 my $usermap = {};
 my $sf_base_url = "https://sourceforge.net/p/";
 my $sf_tracker = "";  ## e.g. obo/mouse-anatomy-requests
@@ -62,6 +62,10 @@ while ($ARGV[0] =~ /^\-/) {
     }
 }
 print STDERR "TICKET JSON: @ARGV\n";
+
+if (!$default_assignee) {
+    die("You must specify a default assignee using the -a option");
+}
 
 my %collabh = ();
 foreach (@collabs) {
@@ -301,7 +305,7 @@ ARGUMENTS:
                   Maps SF usernames to GH
                   Example: https://github.com/geneontology/go-site/blob/master/metadata/users_sf2gh.json
 
-   -a | --assignee  USERNAME *RECOMMENDED*
+   -a | --assignee  USERNAME *REQUIRED*
                  Default username to assign tickets to if there is no mapping for the original SF assignee in usermap
 
    -c | --collaborators COLLAB-JSON-FILE *REQUIRED*
