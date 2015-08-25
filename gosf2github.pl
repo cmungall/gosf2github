@@ -330,7 +330,6 @@ NOTES:
 
  * uses a pre-release API documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
  * milestones are converted to labels
-<<<<<<< HEAD
  * all issues and comments will appear to have originated from the user who issues the OAth ticket
  * NEVER RUN TWO PROCESSES OF THIS SCRIPT IN THE SAME DIRECTORY - see notes on json hack below
 
@@ -348,9 +347,7 @@ submit a fix via pull request if this bothers you.
 script at the same time in the same directory)
 
 The script will then sleep for 3s before continuing on to the next ticket.
-=======
  * all issues and comments will appear to have originated from the user who issues the OAuth token
->>>>>>> a4815e6387e90a4abdebb43e40e857aa0f9959dc
 
 TIP:
 
