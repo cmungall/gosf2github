@@ -50,7 +50,7 @@ ARGUMENTS:
    -c | --collaborators COLLAB-JSON-FILE *REQUIRED*
                   Required, as it is impossible to assign to a non-collaborator
                   Generate like this:
-                  curl -H "Authorization: token TOKEN  https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
+                  curl -H "Authorization: token TOKEN" https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
 
    -s | --sf-tracker  NAME
                  E.g. obo/mouse-anatomy-requests
