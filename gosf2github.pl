@@ -295,7 +295,8 @@ ARGUMENTS:
 
    -t | --token  TOKEN *REQUIRED*
                  OAuth token. Get one here: https://github.com/settings/tokens
-                 Note that all tickets and issues will appear to originate from the user that generates the token
+                 Note that all tickets and issues will appear to originate from the user that generates the token.
+                 Important: make sure the token has the public_repo scope.
 
    -l | --label  LABEL
                  Add this label to all tickets, in addition to defaults and auto-added.
