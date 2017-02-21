@@ -19,7 +19,7 @@ Requirements:
 
 Example Usage:
 
-curl -H "Authorization: token TOKEN  https://api.github.com/repos/obophenotype/cell-ontology/collaborators > cell-collab.json
+curl -H "Authorization: token TOKEN"  https://api.github.com/repos/obophenotype/cell-ontology/collaborators > cell-collab.json
 gosf2github.pl -a cmungall -u users_sf2gh.json -c cell-collab.json -r obophenotype/cell-ontology -t YOUR-TOKEN-HERE cell-ontology-sf-export.json 
 
 
