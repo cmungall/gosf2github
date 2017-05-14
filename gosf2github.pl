@@ -163,7 +163,7 @@ foreach my $ticket (@tickets) {
         "created_at" => cvt_time($ticket->{created_date}),    ## check
         "assignee" => $assignee,
         #"milestone" => 1,  # todo
-        "closed" => $ticket->{status} =~ /closed/ ? JSON::true : JSON::false ,
+        "closed" => $ticket->{status} =~ /(Fixed|Done|WontFix|Verified|Duplicate|Invalid)/ ? JSON::true : JSON::false ,
         "labels" => \@labels,
     };
     my @comments = ();
@@ -247,15 +247,7 @@ sub cvt_time {
 # customize this?
 sub map_priority {
     my $pr = shift;
-    if (!$pr || $pr eq "5") {
-        return ();
-    }
-    if ($pr < 5) {
-        return ("low priority");
-    }
-    if ($pr > 5) {
-        return ("high priority");
-    }
+    return ();
 }
 
 sub scriptname {
