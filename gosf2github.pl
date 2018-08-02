@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 use strict;
 use JSON;
 
@@ -63,10 +63,6 @@ while ($ARGV[0] =~ /^\-/) {
 }
 print STDERR "TICKET JSON: @ARGV\n";
 
-if (!$default_assignee) {
-    die("You must specify a default assignee using the -a option");
-}
-
 my %collabh = ();
 foreach (@collabs) {
     $collabh{$_->{login}} = $_;
@@ -99,8 +95,10 @@ foreach my $ticket (@tickets) {
     }
 
     my $assignee = map_user($ticket->{assigned_to});
-    if (!$assignee || !$collabh{$assignee}) {
-        #die "$assignee is not a collaborator";
+    if ($assignee && !$collabh{$assignee}) {
+        die "$assignee is not a collaborator";
+    }
+    if (!$assignee) {
         $assignee = $default_assignee;
     }
 
@@ -161,11 +159,13 @@ foreach my $ticket (@tickets) {
         "title" => $ticket->{summary},
         "body" => $body,
         "created_at" => cvt_time($ticket->{created_date}),    ## check
-        "assignee" => $assignee,
         #"milestone" => 1,  # todo
-        "closed" => $ticket->{status} =~ /(Fixed|Done|WontFix|Verified|Duplicate|Invalid)/ ? JSON::true : JSON::false ,
+        "closed" => $ticket->{status} =~ /([Cc]losed.*|[Ff]ixed|[Dd]one|[Ww]ont.*[Ff]ix|[Vv]erified|[Dd]uplicate|[Ii]nvalid)/ ? JSON::true : JSON::false ,
         "labels" => \@labels,
     };
+    if ($assignee) {
+        $issue->{assignee} = $assignee;
+    }
     my @comments = ();
     foreach my $post (@{$ticket->{discussion_thread}->{posts}}) {
         my $comment =
@@ -290,21 +290,21 @@ ARGUMENTS:
                  Note that all tickets and issues will appear to originate from the user that generates the token.
                  Important: make sure the token has the public_repo scope.
 
-   -l | --label  LABEL
-                 Add this label to all tickets, in addition to defaults and auto-added.
-                 Currently the following labels are ALWAYS added: auto-migrated, a priority label (unless priority=5), a label for every SF label, a label for the milestone
+   -c | --collaborators COLLAB-JSON-FILE *REQUIRED*
+                  Required, as it is impossible to assign to a non-collaborator
+                  Generate like this:
+                  curl -H "Authorization: token TOKEN" https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
 
    -u | --usermap USERMAP-JSON-FILE *RECOMMENDED*
                   Maps SF usernames to GH
                   Example: https://github.com/geneontology/go-site/blob/master/metadata/users_sf2gh.json
 
-   -a | --assignee  USERNAME *REQUIRED*
+   -a | --assignee  USERNAME *RECOMMENDED*
                  Default username to assign tickets to if there is no mapping for the original SF assignee in usermap
 
-   -c | --collaborators COLLAB-JSON-FILE *REQUIRED*
-                  Required, as it is impossible to assign to a non-collaborator
-                  Generate like this:
-                  curl -H "Authorization: token TOKEN" https://api.github.com/repos/cmungall/sf-test/collaborators > sf-test-collab.json
+   -l | --label  LABEL
+                 Add this label to all tickets, in addition to defaults and auto-added.
+                 Currently the following labels are ALWAYS added: auto-migrated, a priority label (unless priority=5), a label for every SF label, a label for the milestone
 
    -i | --initial-ticket  NUMBER
                  Start the import from (sourceforge) ticket number NUM. This can be useful for resuming a previously stopped or failed import.
@@ -324,6 +324,11 @@ NOTES:
  * uses a pre-release API documented here: https://gist.github.com/jonmagic/5282384165e0f86ef105
  * milestones are converted to labels
  * all issues and comments will appear to have originated from the user who issues the OAth ticket
+ * confirm your rate limit for "core" before you start to ensure you have sufficient requests
+   remaining to import your number of tickets. The script makes no effort to do this for you.
+
+   curl -H "Authorization: token TOKEN" https://api.github.com/rate_limit
+
  * NEVER RUN TWO PROCESSES OF THIS SCRIPT IN THE SAME DIRECTORY - see notes on json hack below
 
 HOW IT WORKS:
@@ -352,6 +357,8 @@ ticket and comments.
 Create an account for an agent like https://github.com/bbopjenkins -
 use this account to generate the token. This may be better than having
 everything show up under your own personal account
+
+The account requires admin priveleges for the repository.
 
 CREDITS:
 
