@@ -105,7 +105,7 @@ Create an account for an agent like https://github.com/bbopjenkins -
 use this account to generate the token. This may be better than having
 everything show up under your own personal account
 
-The account requires admin priveleges for the repository.
+The account requires admin privileges for the repository.
 
 CREDITS:
 
