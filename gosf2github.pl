@@ -74,6 +74,11 @@ my $obj = $json->decode( $blob );
 my @tickets = @{$obj->{tickets}};
 my @milestones = @{$obj->{milestones}};
 
+my %closed_statuses;
+if ($obj->{closed_status_names}) {
+    %closed_statuses = map { $_ => 1 } split(" ", $obj->{closed_status_names});
+}
+
 #foreach my $k (keys %$obj) {
 #    print "$k\n";
 #}
@@ -160,7 +165,7 @@ foreach my $ticket (@tickets) {
         "body" => $body,
         "created_at" => cvt_time($ticket->{created_date}),    ## check
         #"milestone" => 1,  # todo
-        "closed" => $ticket->{status} =~ /([Cc]losed.*|[Ff]ixed|[Dd]one|[Ww]ont.*[Ff]ix|[Vv]erified|[Dd]uplicate|[Ii]nvalid)/ ? JSON::true : JSON::false ,
+        "closed" => is_closed($ticket->{status}) ? JSON::true : JSON::false,
         "labels" => \@labels,
     };
     if ($assignee) {
@@ -219,6 +224,13 @@ foreach my $ticket (@tickets) {
 
 
 exit 0;
+
+sub is_closed {
+    my $status = shift;
+    return (%closed_statuses)
+        ? $closed_statuses{$status}
+        : $status =~ /([Cc]losed.*|[Ff]ixed|[Dd]one|[Ww]ont.*[Ff]ix|[Vv]erified|[Dd]uplicate|[Ii]nvalid)/;
+}
 
 sub parse_json_file {
     my $f = shift;
