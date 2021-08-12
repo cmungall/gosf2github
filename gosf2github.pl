@@ -1,6 +1,7 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env -S perl -w
 use strict;
 use JSON;
+use Getopt::Long;
 
 my $json = new JSON;
 
@@ -16,51 +17,26 @@ my $sf_tracker = "";  ## e.g. obo/mouse-anatomy-requests
 my @default_labels = ();
 my $genpurls;
 my $start_from = 1;
-while ($ARGV[0] =~ /^\-/) {
-    my $opt = shift @ARGV;
-    if ($opt eq '-h' || $opt eq '--help') {
-        print usage();
-        exit 0;
-    }
-    elsif ($opt eq '-t' || $opt eq '--token') {
-        $GITHUB_TOKEN = shift @ARGV;
-    }
-    elsif ($opt eq '-r' || $opt eq '--repo') {
-        $REPO = shift @ARGV;
-    }
-    elsif ($opt eq '-a' || $opt eq '--assignee') {
-        $default_assignee = shift @ARGV;
-    }
-    elsif ($opt eq '-s' || $opt eq '--sf-tracker') {
-        $sf_tracker = shift @ARGV;
-    }
-    elsif ($opt eq '-d' || $opt eq '--delay') {
-        $sleeptime = shift @ARGV;
-    }
-    elsif ($opt eq '-i' || $opt eq '--initial-ticket') {
-        $start_from = shift @ARGV;
-    }
-    elsif ($opt eq '-l' || $opt eq '--label') {
-        push(@default_labels, shift @ARGV);
-    }
-    elsif ($opt eq '-k' || $opt eq '--dry-run') {
-        $dry_run = 1;
-    }
-    elsif ($opt eq '--generate-purls') {
-        # if you are not part of the OBO Library project, you can safely ignore this option;
-        # It will replace IDs of form FOO:nnnnn with PURLs
-        $genpurls = 1;
-    }
-    elsif ($opt eq '-c' || $opt eq '--collaborators') {
-        @collabs = @{parse_json_file(shift @ARGV)};
-    }
-    elsif ($opt eq '-u' || $opt eq '--usermap') {
-        $usermap = parse_json_file(shift @ARGV);
-    }
-    else {
-        die $opt;
-    }
-}
+my $attachment_urls = 0;
+
+GetOptions(
+           'help|h' => sub { print usage(); exit 0; },
+           'token|t=s' => \$GITHUB_TOKEN,
+           'repo|r=s' => \$REPO,
+           'assignee|a=s' => \$default_assignee,
+           'sf-tracker|s=s' => \$sf_tracker,
+           'delay|d=i' => \$sleeptime,
+           'initial-ticket|i=i' => \$start_from,
+           'label|l=s' => sub { my ($option, $value) = @_; push @default_labels, $value; },
+           'dry-run|k' => \$dry_run,
+           # if you are not part of the OBO Library project, you can safely ignore this option;
+           # It will replace IDs of form FOO:nnnnn with PURLs
+           'generate-purls' => \$genpurls,
+           'collaborators|c=s' => sub { my ($option, $value) = @_; @collabs = @{parse_json_file($value)}; },
+           'usermap|u=s' => sub { my ($option, $value) = @_; $usermap = parse_json_file($value); },
+           'attachment-urls' => \$attachment_urls,
+          ) or die usage();
+
 print STDERR "TICKET JSON: @ARGV\n";
 
 my %collabh = ();
@@ -168,10 +144,14 @@ foreach my $ticket (@tickets) {
     }
     my @comments = ();
     foreach my $post (@{$ticket->{discussion_thread}->{posts}}) {
+        my $attachments_text = "";
+        if ($attachment_urls and @{$post->{attachments}}) {
+          $attachments_text = "\n\nAttachments:\n  ".join("\n  ",map { $_->{url} } @{$post->{attachments}});
+        }
         my $comment =
         {
             "created_at" => cvt_time($post->{timestamp}),
-            "body" => $post->{text}."\n\nOriginal comment by: ".map_user($post->{author}),
+            "body" => $post->{text}."\n\nOriginal comment by: ".map_user($post->{author}).$attachments_text,
         };
         push(@comments, $comment);
     }
@@ -318,6 +298,9 @@ ARGUMENTS:
    --generate-purls
                  OBO Ontologies only: converts each ID of the form `FOO:nnnnnnn` into a PURL.
                  If this means nothing to you, the option is not intended for you. You can safely ignore it.
+   
+   --attachment-urls
+                 Add SF comment attachment URLs into the issue comments.
 
 NOTES:
 
